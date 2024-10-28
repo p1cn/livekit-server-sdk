@@ -136,7 +136,7 @@ func (e *RTCEngine) Join(url string, token string, params *connectParams) (*live
 	e.token.Store(token)
 	e.connParams = params
 
-	err = e.configure(res.IceServers, res.ClientConfiguration, proto.Bool(res.SubscriberPrimary))
+	err = e.configure(res.IceServers, res.ClientConfiguration, proto.Bool(res.SubscriberPrimary), params.PublisherHeaderExtensions, params.SubscriberHeaderExtensions)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,9 @@ func (e *RTCEngine) setRTT(rtt uint32) {
 func (e *RTCEngine) configure(
 	iceServers []*livekit.ICEServer,
 	clientConfig *livekit.ClientConfiguration,
-	subscriberPrimary *bool) error {
+	subscriberPrimary *bool,
+	pubHeaderExtensions RTPHeaderExtensionConfig,
+	subHeaderExtensions RTPHeaderExtensionConfig) error {
 
 	configuration := e.makeRTCConfiguration(iceServers, clientConfig)
 	e.pclock.Lock()
@@ -242,12 +244,14 @@ func (e *RTCEngine) configure(
 		Interceptors:         e.connParams.Interceptors,
 		OnRTTUpdate:          e.setRTT,
 		IsSender:             true,
+		HeaderExtensions:     pubHeaderExtensions,
 	}); err != nil {
 		return err
 	}
 	if e.subscriber, err = NewPCTransport(PCTransportParams{
 		Configuration:        configuration,
 		RetransmitBufferSize: e.connParams.RetransmitBufferSize,
+		HeaderExtensions:     subHeaderExtensions,
 	}); err != nil {
 		return err
 	}
