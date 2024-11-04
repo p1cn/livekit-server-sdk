@@ -79,6 +79,7 @@ type LocalTrack struct {
 	sdesRtpStreamID  uint8
 	lastTS           time.Time
 	lastRTPTimestamp uint32
+	lastSeqNum       uint16
 	simulcastID      string
 	videoLayer       *livekit.VideoLayer
 	onRTCP           func(rtcp.Packet)
@@ -472,6 +473,9 @@ func (s *LocalTrack) WriteSample(sample media.Sample, opts *SampleWriteOptions) 
 
 	s.lastTS = sample.Timestamp
 	s.lastRTPTimestamp = currentRTPTimestamp
+	if len(packets) > 0 {
+		s.lastSeqNum = packets[len(packets)-1].SequenceNumber
+	}
 	s.lock.Unlock()
 
 	if s.disconnected.Load() {
@@ -587,6 +591,7 @@ func (s *LocalTrack) writeWorker(provider SampleProvider, onComplete func()) {
 	defer close(writeClosed)
 
 	audioProvider, isAudioProvider := provider.(AudioSampleProvider)
+	seqNumProvider, withSeqNumCallback := provider.(AudioSampleProviderWithSequenceNumberCallback)
 
 	nextSampleTime := time.Now()
 	ticker := time.NewTicker(10 * time.Millisecond)
@@ -615,6 +620,13 @@ func (s *LocalTrack) writeWorker(provider SampleProvider, onComplete func()) {
 			if err := s.WriteSample(sample, opts); err != nil {
 				s.log.Errorw("could not write sample", err)
 				return
+			}
+
+			if withSeqNumCallback {
+				s.lock.Lock()
+				seqNum := s.lastSeqNum
+				s.lock.Unlock()
+				seqNumProvider.OnUpdateLastSequenceNumber(seqNum)
 			}
 		}
 
