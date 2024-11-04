@@ -33,6 +33,11 @@ type AudioSampleProvider interface {
 	CurrentAudioLevel() uint8
 }
 
+type AudioSampleProviderWithSequenceNumberCallback interface {
+	SampleProvider
+	OnUpdateLastSequenceNumber(uint16)
+}
+
 // BaseSampleProvider provides empty implementations for OnBind and OnUnbind
 type BaseSampleProvider struct {
 }
