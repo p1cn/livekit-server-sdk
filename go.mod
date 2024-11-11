@@ -11,7 +11,7 @@ require (
 	github.com/livekit/mediatransportutil v0.0.0-20240730083616-559fa5ece598
 	github.com/livekit/protocol v1.27.0
 	github.com/magefile/mage v1.15.0
-	github.com/p1cn/webrtc-extension v0.0.1
+	github.com/p1cn/webrtc-extension v0.0.4
 	github.com/pion/dtls/v2 v2.2.12
 	github.com/pion/interceptor v0.1.30
 	github.com/pion/rtcp v1.2.14
