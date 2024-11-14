@@ -512,8 +512,11 @@ func (e *RTCEngine) handleDataPacket(msg webrtc.DataChannelMessage) {
 				identity = m.ParticipantIdentity
 			}
 			e.OnDataPacket(identity, &UserDataPacket{
-				Payload: m.Payload,
-				Topic:   m.GetTopic(),
+				Payload:   m.Payload,
+				Topic:     m.GetTopic(),
+				ID:        m.GetId(),
+				StartTime: m.GetStartTime(),
+				EndTime:   m.GetEndTime(),
 			})
 		}
 	case *livekit.DataPacket_SipDtmf:

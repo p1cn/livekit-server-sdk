@@ -341,6 +341,10 @@ func UserData(data []byte) *UserDataPacket {
 type UserDataPacket struct {
 	Payload []byte
 	Topic   string // optional
+
+	ID        string
+	StartTime uint64
+	EndTime   uint64
 }
 
 // ToProto implements DataPacket.
@@ -349,10 +353,25 @@ func (p *UserDataPacket) ToProto() *livekit.DataPacket {
 	if p.Topic != "" {
 		topic = proto.String(p.Topic)
 	}
+	var id *string
+	if p.ID != "" {
+		id = proto.String(p.ID)
+	}
+	var startTime, endTime *uint64
+	if p.StartTime != 0 {
+		startTime = proto.Uint64(p.StartTime)
+	}
+	if p.EndTime != 0 {
+		endTime = proto.Uint64(p.EndTime)
+	}
 	return &livekit.DataPacket{Value: &livekit.DataPacket_User{
 		User: &livekit.UserPacket{
 			Payload: p.Payload,
 			Topic:   topic,
+
+			Id:        id,
+			StartTime: startTime,
+			EndTime:   endTime,
 		},
 	}}
 }
